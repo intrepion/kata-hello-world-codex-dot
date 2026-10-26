@@ -1,0 +1,9 @@
+[package]
+name = "kata-hello-world-desktop"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[dependencies]
+gpui-kit = "=0.8.0"
