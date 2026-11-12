@@ -75,7 +75,7 @@ jobs:
           distribution: temurin
           java-version: '25'
       - name: Install only required SDK packages using runner licenses
-        run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
+        run: '"${ANDROID_HOME:?}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;36.0.0"'
       - name: Build and lint debug APK (no emulator or device test)
         working-directory: android
         run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --no-daemon
