@@ -62,3 +62,17 @@ GPUI Kit is Longbridge's `gpui-kit` crate, formerly GPUI Component; this project
 uses its application facade and default GPUI backend.
 
 Deployment and store publication configuration are outside this scaffold.
+
+## Continuous integration
+
+GitHub Actions builds the Astro site, runs Rust CLI formatting and its rendering
+unit test, compiles the GPUI desktop app on macOS, compiles iOS without signing,
+and builds/lints the Android debug APK. Android currently has no unit-test source;
+its unit-test Gradle task must not be interpreted as executed test coverage.
+Native jobs are compile checks, not interactive UI, simulator, or device tests.
+No workflow deploys or publishes an application. SDK installation does not
+blanket-accept licenses; it relies on the hosted runner's existing license records.
+
+Workflow actions are recorded in `.github/workflows/actions.lock`. After changing
+an action, run `gh actions-lock` (official `github/gh-actions-lock` v0.4.1), then
+`gh actions-lock --verify`, and commit the workflow and lockfile together.
