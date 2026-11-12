@@ -1,0 +1,81 @@
+name: Check Hello World applications
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: hello-world-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run build
+  cli:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install 1.96.0 --profile minimal --component rustfmt
+      - run: cargo +1.96.0 fmt --check
+      - run: cargo +1.96.0 test --locked
+  desktop:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install 1.96.0 --profile minimal --component rustfmt
+      - run: cargo +1.96.0 fmt --check
+      - run: cargo +1.96.0 build --locked
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Unsigned iOS compile (no simulator or device test)
+        working-directory: ios
+        run: >-
+          xcodebuild -project HelloWorld.xcodeproj -scheme HelloWorld
+          -configuration Debug -destination 'generic/platform=iOS'
+          -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5.7.0
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Install only required SDK packages using runner licenses
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
+      - name: Build and lint debug APK (no emulator or device test)
+        working-directory: android
+        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --no-daemon
